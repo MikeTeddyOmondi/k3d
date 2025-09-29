@@ -1,0 +1,29 @@
+apiVersion: k3d.io/v1alpha5
+kind: Simple
+metadata:
+  name: macos-cluster
+servers: 1
+agents: 2
+ports:
+  - port: 80:80    # HTTP ingress
+    nodeFilters:
+      - loadbalancer
+  - port: 443:443  # HTTPS ingress
+    nodeFilters:
+      - loadbalancer
+kubeAPI:
+  host: "127.0.0.1"
+  hostPort: "6443"
+options:
+  k3s:
+    extraArgs:
+      - arg: "--disable=traefik"
+        nodeFilters:
+          - server:0
+      - arg: "--flannel-backend=none"
+        nodeFilters:
+          - server:0
+      - arg: "--disable-kube-proxy"
+        nodeFilters:
+          - server:0
+

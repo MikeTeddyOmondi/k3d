@@ -1,0 +1,57 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sticky-notes
+  namespace: default
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: sticky-notes
+  template:
+    metadata:
+      labels:
+        app: sticky-notes
+    spec:
+      containers:
+        - name: sticky-notes
+          image: ranckosolutionsinc/sticky-notes-app:v2.0.0
+          ports:
+            - containerPort: 3000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: sticky-notes-service
+  namespace: default
+spec:
+  selector:
+    app: sticky-notes
+  ports:
+    - port: 80
+      targetPort: 3000
+  type: ClusterIP
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: sticky-notes-ingress
+  namespace: default
+spec:
+  ingressClassName: traefik
+  rules:
+    - host: sticky-notes.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: sticky-notes-service
+                port:
+                  number: 80
+  tls:
+  - hosts:
+    - sticky-notes.local
+    secretName: sticky-notes-tls   # created from mkcert
